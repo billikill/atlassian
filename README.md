@@ -1,1 +1,1 @@
-Скрипты для стека Атлассиан
+Scripts for JIRA / Confluence
