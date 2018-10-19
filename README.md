@@ -1,1 +1,1 @@
-Scripts for JIRA / Confluence
+Scripts for JIRA / Confluence v1.0
