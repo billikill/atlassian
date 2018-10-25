@@ -13,6 +13,7 @@ import com.atlassian.jira.project.version.VersionManager
 import com.atlassian.query.clause.TerminalClause
 import com.atlassian.query.operand.FunctionOperand
 import com.tempoplugin.team.api.TeamManager
+import com.onresolve.jira.groovy.jql.AbstractScriptedJqlFunction
 import com.onresolve.scriptrunner.runner.ScriptRunnerImpl
 import com.onresolve.scriptrunner.runner.customisers.PluginModule
 import com.onresolve.scriptrunner.runner.customisers.WithPlugin
@@ -20,14 +21,13 @@ import com.tempoplugin.team.api.TeamService
 import com.tempoplugin.team.api.role.TeamRole
 
 @WithPlugin ("com.tempoplugin.tempo-teams")
-
+TeamManager teamManager  = ScriptRunnerImpl.getPluginComponent(TeamManager)
 
 class TeamInRole extends AbstractScriptedJqlFunction implements JqlFunction {
-    TeamManager teamManager  = ScriptRunnerImpl.getPluginComponent(TeamManager)
 
     @Override
     String getDescription() {
-        "Get users in Role in Team "
+        "Get members in role in team "
     }
 
 
@@ -37,7 +37,7 @@ class TeamInRole extends AbstractScriptedJqlFunction implements JqlFunction {
                 [
                         description: "Name Team",
                         optional: false,
-                ],
+                ]
                 //[
                 //        description: "Name Role",
                 //       optional: false,
@@ -48,7 +48,7 @@ class TeamInRole extends AbstractScriptedJqlFunction implements JqlFunction {
 
     @Override
     String getFunctionName() {
-        "TeamInRole"
+        "teamInRole"
     }
 
 
@@ -59,6 +59,7 @@ class TeamInRole extends AbstractScriptedJqlFunction implements JqlFunction {
 
     @Override
     MessageSet validate(ApplicationUser user, FunctionOperand operand, TerminalClause terminalClause) {
+
         def name_team = teamManager.getTeamByName(operand.args.first())
         //def name_role = teamR
 
@@ -76,7 +77,7 @@ class TeamInRole extends AbstractScriptedJqlFunction implements JqlFunction {
     @Override
     List<QueryLiteral> getValues( QueryCreationContext queryCreationContext, FunctionOperand operand, TerminalClause terminalClause) {
 
-        List<QueryLiteral> out = []
+        //List<QueryLiteral> out = []
 
 
 
