@@ -12,16 +12,18 @@ import com.atlassian.jira.permission.ProjectPermissions
 import com.atlassian.jira.project.version.VersionManager
 import com.atlassian.query.clause.TerminalClause
 import com.atlassian.query.operand.FunctionOperand
-
 import com.tempoplugin.team.api.TeamManager
 import com.onresolve.scriptrunner.runner.ScriptRunnerImpl
 import com.onresolve.scriptrunner.runner.customisers.PluginModule
 import com.onresolve.scriptrunner.runner.customisers.WithPlugin
+import com.tempoplugin.team.api.TeamService
+import com.tempoplugin.team.api.role.TeamRole
 
 @WithPlugin ("com.tempoplugin.tempo-teams")
-TeamManager teamManager  = ScriptRunnerImpl.getPluginComponent(TeamManager)
 
-class TeamInRole extends AbstractScriptedJqlFunction implements JqlValuesFunction {
+
+class TeamInRole extends AbstractScriptedJqlFunction implements JqlFunction {
+    TeamManager teamManager  = ScriptRunnerImpl.getPluginComponent(TeamManager)
 
     @Override
     String getDescription() {
@@ -58,13 +60,14 @@ class TeamInRole extends AbstractScriptedJqlFunction implements JqlValuesFunctio
     @Override
     MessageSet validate(ApplicationUser user, FunctionOperand operand, TerminalClause terminalClause) {
         def name_team = teamManager.getTeamByName(operand.args.first())
+        //def name_role = teamR
 
         MessageSet messages = new MessageSetImpl()
-        if (name_role == null) {
-            messages.addErrorMessage ("Role not found")
+        if (name_team == null) {
+            messages.addErrorMessage ("Team not found")
         }
-        //if (name_team == null){
-        //    messages.addErrorMessage ("Team not found")
+        //if (name_role == null){
+        //    messages.addErrorMessage ("Role not found")
         //}
         return messages
     }
