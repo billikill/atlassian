@@ -20,9 +20,10 @@ import com.onresolve.scriptrunner.runner.customisers.WithPlugin
 import com.tempoplugin.team.api.TeamService
 import com.tempoplugin.team.api.role.TeamRole
 import com.tempoplugin.team.api.role.TeamRoleService
+
 import org.apache.log4j.Level
 import org.apache.log4j.Logger
-
+import java.util.logging.Logger
 
 
 
@@ -30,10 +31,11 @@ import org.apache.log4j.Logger
 class TeamInRole extends AbstractScriptedJqlFunction implements JqlFunction {
     TeamManager teamManager  = ScriptRunnerImpl.getPluginComponent(TeamManager)
     TeamService teamService  = ScriptRunnerImpl.getPluginComponent(TeamService)
+    Logger log = Logger.getLogger("com.test.InlineScript")
 
     @Override
     String getDescription() {
-        "Get members in role in team "
+        "Get members in role in team. Example: assignee in teamInRole(\"Name Team\", \"Name Role\")"
     }
 
 
@@ -61,26 +63,19 @@ class TeamInRole extends AbstractScriptedJqlFunction implements JqlFunction {
     MessageSet validate(ApplicationUser user, FunctionOperand operand, TerminalClause terminalClause) {
 
         MessageSet messages = new MessageSetImpl()
-        def name_team = teamManager.getTeamByName(operand.args.get(0))
-        //log.error("Получаем что ввел юзер" + name_team)
+        def team = teamManager.getTeamByName(operand.args.get(0))
         def name_role = operand.args.get(1)
-        //log.error("Получаем что ввел юзер" + name_role)
-        def roles = teamService.getTeamRoles()
-        //log.error("Получаем список ролей" + roles)
-        //Collection<TeamRole> name_roles = teamService.getTeamRoles().get()
-        for (String role in roles){
-            if (name_role != role){
+        def roles = teamService.getTeamRoles().get()
+        for (TeamRole role in roles){
+            if (name_role != role.getName()){
                 messages.addErrorMessage ("Role not found")
             }
         }
 
-        //MessageSet messages = new MessageSetImpl()
-        if (name_team == null) {
+        if (team == null) {
             messages.addErrorMessage ("Team not found")
         }
-        //if (name_role == null){
-        //    messages.addErrorMessage ("Role not found")
-        //}
+
         return messages
     }
 
