@@ -19,11 +19,17 @@ import com.onresolve.scriptrunner.runner.customisers.PluginModule
 import com.onresolve.scriptrunner.runner.customisers.WithPlugin
 import com.tempoplugin.team.api.TeamService
 import com.tempoplugin.team.api.role.TeamRole
+import com.tempoplugin.team.api.role.TeamRoleService
+import org.apache.log4j.Level
+import org.apache.log4j.Logger
+
+
+
 
 @WithPlugin ("com.tempoplugin.tempo-teams")
-TeamManager teamManager  = ScriptRunnerImpl.getPluginComponent(TeamManager)
-
 class TeamInRole extends AbstractScriptedJqlFunction implements JqlFunction {
+    TeamManager teamManager  = ScriptRunnerImpl.getPluginComponent(TeamManager)
+    TeamService teamService  = ScriptRunnerImpl.getPluginComponent(TeamService)
 
     @Override
     String getDescription() {
@@ -34,14 +40,8 @@ class TeamInRole extends AbstractScriptedJqlFunction implements JqlFunction {
     @Override
     List<Map> getArguments() {
         [
-                [
-                        description: "Name Team",
-                        optional: false,
-                ]
-                //[
-                //        description: "Name Role",
-                //       optional: false,
-                //],
+                [ description: "Name Team", optional: false ],
+                [ description: "Name Role", optional: false ]
         ]
     }
 
@@ -53,17 +53,28 @@ class TeamInRole extends AbstractScriptedJqlFunction implements JqlFunction {
 
 
     @Override
-    JiraDataType getDataType() {
+     JiraDataType getDataType() {
         JiraDataTypes.ISSUE
     }
 
     @Override
     MessageSet validate(ApplicationUser user, FunctionOperand operand, TerminalClause terminalClause) {
 
-        def name_team = teamManager.getTeamByName(operand.args.first())
-        //def name_role = teamR
-
         MessageSet messages = new MessageSetImpl()
+        def name_team = teamManager.getTeamByName(operand.args.get(0))
+        //log.error("Получаем что ввел юзер" + name_team)
+        def name_role = operand.args.get(1)
+        //log.error("Получаем что ввел юзер" + name_role)
+        def roles = teamService.getTeamRoles()
+        //log.error("Получаем список ролей" + roles)
+        //Collection<TeamRole> name_roles = teamService.getTeamRoles().get()
+        for (String role in roles){
+            if (name_role != role){
+                messages.addErrorMessage ("Role not found")
+            }
+        }
+
+        //MessageSet messages = new MessageSetImpl()
         if (name_team == null) {
             messages.addErrorMessage ("Team not found")
         }
