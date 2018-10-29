@@ -66,15 +66,16 @@ class TeamInRole extends AbstractScriptedJqlFunction implements JqlFunction {
         def team = teamManager.getTeamByName(operand.args.get(0))
         def name_role = operand.args.get(1)
         def roles = teamService.getTeamRoles().get()
+        boolean roleExists = false
         for (TeamRole role in roles){
-            if (name_role != role.getName()){
-                messages.addErrorMessage ("Role not found")
+            if (name_role == role.getName()){
+                roleExists = true
+                break
             }
         }
+        if(!roleExists) {messages.addErrorMessage ("Role not found")}
 
-        if (team == null) {
-            messages.addErrorMessage ("Team not found")
-        }
+        if (team == null) {messages.addErrorMessage ("Team not found")}
 
         return messages
     }
@@ -83,7 +84,14 @@ class TeamInRole extends AbstractScriptedJqlFunction implements JqlFunction {
     @Override
     List<QueryLiteral> getValues( QueryCreationContext queryCreationContext, FunctionOperand operand, TerminalClause terminalClause) {
 
+        def team = teamManager.getTeamByName(operand.args.get(0))       // получили название команды
+        def name_role = operand.args.get(1)                             // получили какую рольввел юзер
+        def roles = teamService.getTeamRoles().get()                    // получили все роил какие есть в команде
+        def members= teamManager.getActiveTempoMembers(team)            // получили учатников команды
+        def members_role = teamService.getTeamMembersByRole(name_role)  // получили участников команды в роли, которую ввел юзер
+        def member_name =  members                                      // получаем логины участников которые находятся в роли
         //List<QueryLiteral> out = []
+
 
 
 
