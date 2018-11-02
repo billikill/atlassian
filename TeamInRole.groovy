@@ -12,26 +12,22 @@ import com.atlassian.jira.permission.ProjectPermissions
 import com.atlassian.jira.project.version.VersionManager
 import com.atlassian.query.clause.TerminalClause
 import com.atlassian.query.operand.FunctionOperand
-import com.tempoplugin.team.api.TeamManager
 import com.onresolve.jira.groovy.jql.AbstractScriptedJqlFunction
 import com.onresolve.scriptrunner.runner.ScriptRunnerImpl
 import com.onresolve.scriptrunner.runner.customisers.PluginModule
 import com.onresolve.scriptrunner.runner.customisers.WithPlugin
+import com.tempoplugin.team.api.TeamManager
 import com.tempoplugin.team.api.TeamService
 import com.tempoplugin.team.api.role.TeamRole
-import com.tempoplugin.team.api.role.TeamRoleService
 
-import org.apache.log4j.Level
-import org.apache.log4j.Logger
-import java.util.logging.Logger
 
 
 
 @WithPlugin ("com.tempoplugin.tempo-teams")
 class TeamInRole extends AbstractScriptedJqlFunction implements JqlFunction {
-    TeamManager teamManager  = ScriptRunnerImpl.getPluginComponent(TeamManager)
     TeamService teamService  = ScriptRunnerImpl.getPluginComponent(TeamService)
-    Logger log = Logger.getLogger("com.test.InlineScript")
+    TeamManager teamManager  = ScriptRunnerImpl.getPluginComponent(TeamManager)
+
 
     @Override
     String getDescription() {
@@ -67,7 +63,7 @@ class TeamInRole extends AbstractScriptedJqlFunction implements JqlFunction {
         def name_role = operand.args.get(1)
         def roles = teamService.getTeamRoles().get()
         boolean roleExists = false
-        for (TeamRole role in roles){
+        for (role in roles){
             if (name_role == role.getName()){
                 roleExists = true
                 break
@@ -84,14 +80,17 @@ class TeamInRole extends AbstractScriptedJqlFunction implements JqlFunction {
     @Override
     List<QueryLiteral> getValues( QueryCreationContext queryCreationContext, FunctionOperand operand, TerminalClause terminalClause) {
 
-        def team = teamManager.getTeamByName(operand.args.get(0))       // получили название команды
-        def name_role = operand.args.get(1)                             // получили какую рольввел юзер
-        def roles = teamService.getTeamRoles().get()                    // получили все роил какие есть в команде
-        def members= teamManager.getActiveTempoMembers(team)            // получили учатников команды
-        def members_role = teamService.getTeamMembersByRole(name_role)  // получили участников команды в роли, которую ввел юзер
-        def member_name =  members                                      // получаем логины участников которые находятся в роли
-        //List<QueryLiteral> out = []
+        def team = teamService.getTeamByName(operand.args.get(0))       // получили название команды, которую ввел юзер
+        def team_id =  team.getId()                                     // получаем id команды
+        def name_role = operand.args.get(1)                             // получили название роли, которую ввел юзер
+        //def roles = teamService.getTeamRoles().get()                    // получили все роли какие есть
+        //def members= teamManager.getActiveTempoMembers(team)            // получили учатников команды
+        //def members_role = teamService.getTeamMembersByRole(name_role)  // получили участников команды в роли, которую ввел юзер
+        def team_member = teamService.getTeamMembership(team_id).get()                   //получаем мемберов команды по id команды
+        def mm = teamService.getTeamMember(team_id).get()                     // получаем мембера команды
 
+
+        //List <QueryLiteral> out = mm.get()
 
 
 
