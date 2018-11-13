@@ -1,5 +1,6 @@
 package com.onresolve.jira.groovy.jql
 import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.datetime.LocalDate
 import com.atlassian.jira.issue.Issue
 import com.atlassian.jira.user.ApplicationUser
 import com.atlassian.jira.util.MessageSet
@@ -16,12 +17,15 @@ import com.onresolve.jira.groovy.jql.AbstractScriptedJqlFunction
 import com.onresolve.scriptrunner.runner.ScriptRunnerImpl
 import com.onresolve.scriptrunner.runner.customisers.PluginModule
 import com.onresolve.scriptrunner.runner.customisers.WithPlugin
+import com.tempoplugin.core.datetime.api.TempoDate
+import com.tempoplugin.core.datetime.api.TempoDateTime
 import com.tempoplugin.core.datetime.range.LocalDateRange
 import com.tempoplugin.platform.api.user.TempoUser
 import com.tempoplugin.team.api.TeamManager
 import com.tempoplugin.team.api.TeamService
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
+
 
 
 @WithPlugin ("is.origo.jira.tempo-plugin")
@@ -125,11 +129,13 @@ class TeamInRole extends AbstractScriptedJqlFunction implements JqlFunction {
         //log.debug("Получаем группы в какие входит юзер:" + ww)
         */
         def date = LocalDateRange.unbounded()
+        def locaDate = TempoDate.now()
         log.debug("Получаем дату:" + date)
+        log.debug("Получаем дату 2:" + locaDate)
         log.debug("Получаем teamService:" + teamService)
-        List<TempoUser> mem = teamService.getTeamMembersByRole(date, role_id)
+        //List<TempoUser> mem = teamService.getTeamMembersByRole(date, role_id)
+        def mem = teamService.getTeamMembersByRole(date, role_id)
         log.debug("Получаем юзеров в роли:" + mem)
-
 
 
     }
