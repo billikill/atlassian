@@ -12,6 +12,7 @@ import com.onresolve.jira.groovy.jql.AbstractScriptedJqlFunction
 import com.onresolve.scriptrunner.runner.ScriptRunnerImpl
 import com.onresolve.scriptrunner.runner.customisers.WithPlugin
 import com.tempoplugin.core.datetime.range.LocalDateRange
+import com.tempoplugin.platform.api.user.TempoUser
 import com.tempoplugin.team.api.Team
 import com.tempoplugin.team.api.TeamManager
 import com.tempoplugin.team.api.TeamService
@@ -26,6 +27,7 @@ import org.apache.log4j.Level
 class TeamInRole extends AbstractScriptedJqlFunction implements JqlFunction {
     TeamManager teamManager  = ScriptRunnerImpl.getPluginComponent(TeamManager)
     TeamService teamService  = ScriptRunnerImpl.getPluginComponent(TeamService)
+    com.tempoplugin.timetracking.team.TeamService teamService1 = ScriptRunnerImpl.getPluginComponent(com.tempoplugin.timetracking.team.TeamService
 
     @Override
     String getDescription() {
@@ -56,34 +58,17 @@ class TeamInRole extends AbstractScriptedJqlFunction implements JqlFunction {
     @Override
     MessageSet validate(ApplicationUser user, FunctionOperand operand, TerminalClause terminalClause) {
 
-
         MessageSet messages = new MessageSetImpl()
         def team = teamManager.getTeamByName(operand.args.get(0))
-        def team_id =  team.getId()
         def name_role = operand.args.get(1)
         def roles = teamService.getTeamRoles().get()
         boolean roleExists = false
-        def role_id
         for (role in roles){
             if (name_role == role.getName()){
                 roleExists = true
-                role_id = role.getId()
                 break
             }
         }
-        def a = teamService.getTeamMember(team_id).get()
-        log.debug("Получаем team member :" + a)
-        def s  = a.getTeamId(team_id)
-        log.debug("Получаем ID юзеров :" + s)
-        boolean userTeam = false
-        for (){
-            if(s == role_id) {
-                userTeam = true
-                //break
-            }
-        }
-
-        if(!userTeam) {messages.addErrorMessage ("User in Team not found")}
 
         if(!roleExists) {messages.addErrorMessage ("Role not found")}
 
@@ -114,26 +99,25 @@ class TeamInRole extends AbstractScriptedJqlFunction implements JqlFunction {
                 break
             }
         }
+
+        def w = teamService1.getTeamMembers(team)
         log.debug ("Получаем ID роли которую ввел юзер:" + role_id)
         def date = LocalDateRange.oneDay(new org.joda.time.DateTime())
         log.debug("Получаем дату:" + date)
         def mem = teamService.getTeamMembersByRole(date, role_id).get()
-        def userid
         List<QueryLiteral> out = []
-        for (i in mem){
-            out.add(new QueryLiteral(operand, i.userKey))
-            userid = i.getId()
-            log.debug("Получаем id юзера который в роли:" + userid)
-            def username = i.getUserKey()
-            log.debug("Получаем кей юзера в роли:" + username)
-            out.add(new QueryLiteral(operand, username))
+        for (i in w){
+            def username3 = i.getKey()
+            log.debug("Получаем кей юзера в роли 3:" + username3)
+            for (ii in mem){
+                def username4 = ii.getUserKey()
+                log.debug("Получаем кей юзера в роли 3:" + username3)
+                if (username3 == username4){
+                    out.add(new QueryLiteral(operand, username3 ))
+                }
+            }
         }
         log.debug("Получаем юзеров в роли:" + mem)
-
-        //def a = teamService.getTeamMember(userid).get()
-        //log.debug("Получаем team member :" + a)
-        //def s  = a.getTeamId()
-        //log.debug("Получаем ID юзеров :" + s)
         return out
 
 
