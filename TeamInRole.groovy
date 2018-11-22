@@ -12,12 +12,8 @@ import com.onresolve.jira.groovy.jql.AbstractScriptedJqlFunction
 import com.onresolve.scriptrunner.runner.ScriptRunnerImpl
 import com.onresolve.scriptrunner.runner.customisers.WithPlugin
 import com.tempoplugin.core.datetime.range.LocalDateRange
-import com.tempoplugin.platform.api.user.TempoUser
-import com.tempoplugin.team.api.Team
 import com.tempoplugin.team.api.TeamManager
 import com.tempoplugin.team.api.TeamService
-import com.tempoplugin.team.api.member.TeamMember
-import com.tempoplugin.team.api.member.TeamMembership
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
 
@@ -50,9 +46,9 @@ class TeamInRole extends AbstractScriptedJqlFunction implements JqlFunction {
     }
 
 
-    @Override
+    public @Override
      JiraDataType getDataType() {
-        JiraDataTypes.ISSUE
+        JiraDataTypes.USER
     }
 
     @Override
