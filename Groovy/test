@@ -1,33 +1,40 @@
 import com.atlassian.jira.component.ComponentAccessor
-import com.atlassian.jira.issue.history.ChangeItemBean
-import com.atlassian.jira.model.ChangeGroup
-import com.atlassian.jira.model.ChangeItem
+import com.atlassian.jira.event.type.EventDispatchOption
+import com.atlassian.jira.issue.ModifiedValue
 import org.apache.log4j.Level
 import org.apache.log4j.Logger
 
 
-log = Logger.getLogger("com.acme.AddlastcommentinQA")
-log.setLevel(Level.DEBUG)
+log = Logger.getLogger("com.acme.updateDescriptioninQA")
+log.setLevel(Level.WARN)
 
+def issueManager = ComponentAccessor.getIssueManager()
 def linkManager = ComponentAccessor.getIssueLinkManager()
 def commentManager = ComponentAccessor.getCommentManager()
 def user = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser()
+//def issue = ComponentAccessor.getIssueManager().getIssueByCurrentKey("KFSS2-2650")
 
+/*
 def changeHistoryManager = ComponentAccessor.getChangeHistoryManager()
 def created = changeHistoryManager.getChangeItemsForField(issue, "description")
 log.debug(created?.last().toString)
 
-/*
-def change = event?.getChangeLog()?.getRelated("ChildChangeItem")?.find {it.field in ["description"]}
-log.debug(change.toString)
-//def customFieldManager = ComponentAccessor.getCustomFieldManager()
-//def tgtField = customFieldManager.getCustomFieldObjects(event.issue).find {it.name == "description"}
-//log.debug(tgtField.toString)
-
-if (change) {
-    log.debug "Value changed from ${change.oldstring} to ${change.newstring}"
-	// your actions if the field has changed
-}
+def customFieldManager = ComponentAccessor.getCustomFieldManager().getCustomFieldObject("customfield_13603") // Текст копирайта
+def valueCF = issue.getCustomFieldValue(customFieldManager)
 */
 
-log.debug("222")
+def change = event?.getChangeLog()?.getRelated("ChildChangeItem")?.find {it.field in ["description"]}
+if (change) {
+    //log.debug "Value changed from ${change.oldstring} to ${change.newstring}"
+
+
+	def linkedIssue
+	linkManager.getOutwardLinks(issue.id).each{
+	linkedIssue = it.destinationObject
+    	log.debug("Получаем исходящие связанные задачи к задаче KFSS $issue: " + linkedIssue + " с типом: " + linkedIssue.getIssueTypeObject().name)
+        linkedIssue.setDescription(change.newstring)
+		issueManager.updateIssue(user, linkedIssue, EventDispatchOption.ISSUE_UPDATED, false)
+    }    
+} 
+
+
