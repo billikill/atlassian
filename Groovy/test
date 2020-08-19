@@ -1,0 +1,33 @@
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.issue.history.ChangeItemBean
+import com.atlassian.jira.model.ChangeGroup
+import com.atlassian.jira.model.ChangeItem
+import org.apache.log4j.Level
+import org.apache.log4j.Logger
+
+
+log = Logger.getLogger("com.acme.AddlastcommentinQA")
+log.setLevel(Level.DEBUG)
+
+def linkManager = ComponentAccessor.getIssueLinkManager()
+def commentManager = ComponentAccessor.getCommentManager()
+def user = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser()
+
+def changeHistoryManager = ComponentAccessor.getChangeHistoryManager()
+def created = changeHistoryManager.getChangeItemsForField(issue, "description")
+log.debug(created?.last().toString)
+
+/*
+def change = event?.getChangeLog()?.getRelated("ChildChangeItem")?.find {it.field in ["description"]}
+log.debug(change.toString)
+//def customFieldManager = ComponentAccessor.getCustomFieldManager()
+//def tgtField = customFieldManager.getCustomFieldObjects(event.issue).find {it.name == "description"}
+//log.debug(tgtField.toString)
+
+if (change) {
+    log.debug "Value changed from ${change.oldstring} to ${change.newstring}"
+	// your actions if the field has changed
+}
+*/
+
+log.debug("222")
