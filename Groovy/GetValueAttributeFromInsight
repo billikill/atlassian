@@ -55,6 +55,8 @@ def user = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser()
 def issue = ComponentAccessor.getIssueManager().getIssueObject("JU-5713")
 
 List cf = cfm.getCustomFieldObject(27701L).getValue(issue)
+def newIssue
+List ib =["JIRAUSER43202"]
 log.warn(cf.size())
 cf.each { 
     def objectVal = objectFacade.loadObjectBean(it.getId())
@@ -65,15 +67,33 @@ cf.each {
     log.warn("33 : " + attributeBean)
     def attributeValue = objectVal.objectAttributeBeans.find{it.objectTypeAttributeId == attributeBean.id}.objectAttributeValueBeans*.value
     log.warn("44 : " + attributeValue)
-
-    def newIssue = issueFactory.getIssue()
-    newIssue.setProjectId(19100)
-	newIssue.setIssueTypeId("10001")
-	newIssue.setSummary(issue.getSummary())
-	newIssue.setDescription(issue.getDescription())
-	newIssue.setReporterId(issue.getReporterId())
-	newIssue.setAssigneeId(attributeValue)
-    
-    issueManager.createIssueObject(user, newIssue)
+newIssue = createIssue(19100, "10001", issue.getSummary(), issue.getDescription(), attributeValue[0], issue.getReporterId())
     linkManager.createIssueLink(issue.id, newIssue.id, 11100, 1, user)
+
 } 
+ib.each { 
+    log.warn("it : " + it)
+    newIssue = createIssue(19100, "10001", issue.getSummary(), issue.getDescription(), it, issue.getReporterId())
+    linkManager.createIssueLink(issue.id, newIssue.id, 11100, 1, user)
+ }
+}
+
+def createIssue (int project,
+                String issueTypeId,
+                String summary,
+                String description,
+                String assigneeId,
+                String reporterId){
+    def issueFactory = ComponentAccessor.getIssueFactory()
+    def user = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser()
+    def issueManager = ComponentAccessor.getIssueManager()
+    MutableIssue issue = issueFactory.getIssue()
+    issue.setProjectId(project)
+	issue.setIssueTypeId(issueTypeId)
+	issue.setSummary(summary)
+	issue.setDescription(description)
+	issue.setReporterId(reporterId)
+	issue.setAssigneeId(assigneeId)    
+    issueManager.createIssueObject(user, issue)
+    return issue
+}
