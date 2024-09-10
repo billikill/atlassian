@@ -1,0 +1,79 @@
+import java.util.Calendar
+import com.atlassian.jira.issue.label.Label
+import com.atlassian.jira.issue.label.LabelManager
+import com.atlassian.query.clause.Property
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.user.ApplicationUser
+import com.atlassian.jira.issue.link.IssueLink
+import com.opensymphony.workflow.InvalidInputException
+import com.atlassian.jira.issue.CustomFieldManager
+import com.atlassian.jira.issue.MutableIssue
+import com.atlassian.jira.event.type.EventDispatchOption
+import com.onresolve.scriptrunner.runner.customisers.WithPlugin
+import com.atlassian.jira.issue.link.RemoteIssueLinkManager
+import com.atlassian.jira.issue.link.RemoteIssueLinkBuilder
+import com.atlassian.jira.bc.issue.link.RemoteIssueLinkService
+import java.util.Scanner
+import java.util.Date
+import com.atlassian.core.ofbiz.util.OFBizPropertyUtils
+import com.atlassian.jira.jql.parser.JqlQueryParser
+import com.atlassian.jira.web.bean.PagerFilter
+import com.atlassian.jira.bc.issue.search.SearchService
+import java.time.*
+import java.sql.Timestamp
+import java.text.SimpleDateFormat
+import java.util.regex.Pattern
+import java.util.regex.Matcher
+import com.riadalabs.jira.plugins.insight.channel.external.api.facade.ObjectTypeAttributeFacade
+import com.riadalabs.jira.plugins.insight.channel.external.api.facade.ObjectFacade
+import com.riadalabs.jira.plugins.insight.channel.external.api.facade.ObjectTypeFacade
+
+
+import org.apache.log4j.Logger
+import org.apache.log4j.Level
+
+@WithPlugin("com.riadalabs.jira.plugins.insight")
+def log = Logger.getLogger("getSDM")
+//log.setLevel(Level.DEBUG)
+def objectTypeAttributeFacade =ComponentAccessor.getOSGiComponentInstanceOfType(ObjectTypeAttributeFacade.class)
+def objectFacade = ComponentAccessor.getOSGiComponentInstanceOfType(ObjectFacade.class)
+def objectTypeFacade = ComponentAccessor.getOSGiComponentInstanceOfType(ObjectTypeFacade.class)
+def issueFactory = ComponentAccessor.getIssueFactory()
+def userManager = ComponentAccessor.getUserManager()
+def changeHistoryManager = ComponentAccessor.getChangeHistoryManager()
+def labelManager = ComponentAccessor.getComponent(LabelManager)
+def issueManager = ComponentAccessor.getIssueManager()
+def issueService = ComponentAccessor.getIssueService()
+def commentManager = ComponentAccessor.getCommentManager()
+def linkManager = ComponentAccessor.getIssueLinkManager() 
+def projectManager =  ComponentAccessor.getProjectManager()
+def cfm = ComponentAccessor.getCustomFieldManager()
+def optionsManager = ComponentAccessor.getOptionsManager()
+def appPropirties = ComponentAccessor.getApplicationProperties()
+//def user = ComponentAccessor.getUserManager().getUserByName("Мастер задач")
+def user = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser()
+def issue = ComponentAccessor.getIssueManager().getIssueObject("JU-5713")
+
+List cf = cfm.getCustomFieldObject(27701L).getValue(issue)
+log.warn(cf.size())
+cf.each { 
+    def objectVal = objectFacade.loadObjectBean(it.getId())
+    log.warn("11 : " + objectVal)
+    def objectType = objectTypeFacade.loadObjectType(objectVal.objectTypeId)
+    log.warn("22 : " + objectType)
+    def attributeBean = objectTypeAttributeFacade.findObjectTypeAttributeBeans(objectType.id).find{ it.name == "SDM"}
+    log.warn("33 : " + attributeBean)
+    def attributeValue = objectVal.objectAttributeBeans.find{it.objectTypeAttributeId == attributeBean.id}.objectAttributeValueBeans*.value
+    log.warn("44 : " + attributeValue)
+
+    def newIssue = issueFactory.getIssue()
+    newIssue.setProjectId(19100)
+	newIssue.setIssueTypeId("10001")
+	newIssue.setSummary(issue.getSummary())
+	newIssue.setDescription(issue.getDescription())
+	newIssue.setReporterId(issue.getReporterId())
+	newIssue.setAssigneeId(attributeValue)
+    
+    issueManager.createIssueObject(user, newIssue)
+    linkManager.createIssueLink(issue.id, newIssue.id, 11100, 1, user)
+} 
